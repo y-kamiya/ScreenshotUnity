@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Windows;
 using Input = UnityEngine.Input;
+using Directory = System.IO.Directory;
 
 namespace DefaultNamespace
 {
@@ -10,7 +11,7 @@ namespace DefaultNamespace
     {
         public Vector3 DefaultPosition = new (0, 0.8f, -2.0f);
         public Quaternion DefaultRotation = Quaternion.Euler(0, 0, 0);
-        public string OutputDir = "/tmp/screenshots/unitychan_t";
+        public string OutputDir = "output";
         
         public GameObject _unitychan;
         public int width = 1024;
@@ -29,6 +30,7 @@ namespace DefaultNamespace
             if (!Directory.Exists(OutputDir))
             {
                 Directory.CreateDirectory(OutputDir);
+                Debug.Log($"created directory of {OutputDir}");
             }
         }
 
