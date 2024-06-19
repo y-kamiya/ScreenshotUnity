@@ -9,7 +9,7 @@ namespace DefaultNamespace
 {
     public class Screenshot : MonoBehaviour
     {
-        public Vector3 DefaultPosition = new (0, 0.8f, -2.0f);
+        public Vector3 DefaultPosition = new (0, 0.75f, -1.5f);
         public Quaternion DefaultRotation = Quaternion.Euler(0, 0, 0);
         public string OutputDir = "output";
         
