@@ -26,12 +26,6 @@ namespace DefaultNamespace
             SetDefaultCamera();
             _baseDistance = Distance();
             //Screen.SetResolution(width, height, false);
-
-            if (!Directory.Exists(OutputDir))
-            {
-                Directory.CreateDirectory(OutputDir);
-                Debug.Log($"created directory of {OutputDir}");
-            }
         }
 
         private void SetDefaultCamera()
@@ -54,10 +48,13 @@ namespace DefaultNamespace
             return (Camera.main.transform.position - _unitychan.transform.position).magnitude;
         }
         
-        private async UniTask TakeScreenshot(UniTaskCompletionSource ucs, int rotationX = 0, int rotationZ = 0)
+        private async UniTask TakeScreenshot(UniTaskCompletionSource ucs, int rotationX = 0, int rotationZ = 0, bool moveCamera = true)
         {
-            MoveCamera(rotationX, rotationZ);
-            await UniTask.WaitForEndOfFrame(this);
+            if (moveCamera)
+            {
+                MoveCamera(rotationX, rotationZ);
+                await UniTask.WaitForEndOfFrame(this);
+            }
 
             var rt = new RenderTexture(width, height, 24);
             Camera.main.targetTexture = rt;
@@ -100,13 +97,38 @@ namespace DefaultNamespace
             _canScreenshot = true;
         }
         
+        private async UniTask TakeCurrentShot()
+        {
+            var ucs = new UniTaskCompletionSource();
+            TakeScreenshot(ucs, 0, 0, false).Forget();
+            await ucs.Task;
+            _canScreenshot = true;
+        }
+
+        private void CreateOutputDir()
+        {
+            if (!Directory.Exists(OutputDir))
+            {
+                Directory.CreateDirectory(OutputDir);
+                Debug.Log($"created directory of {OutputDir}");
+            }
+        }
+
         private void Update()
         {
             //Camera.main.transform.RotateAround(_unitychan.transform.position, Vector3.up, 20 * Time.deltaTime);
             if (_canScreenshot && Input.GetKeyDown("k"))
             {
                 _canScreenshot = false;
+                CreateOutputDir();
                 TakeScreenshots().Forget();
+            }
+
+            if (_canScreenshot && Input.GetKeyDown("c"))
+            {
+                _canScreenshot = false;
+                CreateOutputDir();
+                TakeCurrentShot().Forget();
             }
         }
     }
