@@ -10,6 +10,10 @@ namespace DefaultNamespace
     public class Screenshot : MonoBehaviour
     {
         public Vector3 DefaultPosition = new (0, 0.75f, -1.5f);
+        public List<int> RotationXs = new List<int>{0};
+        // public List<int> RotationXs = new List<int>{ 0, 20, 40, 60, -20, -40, -60 };
+        public int ViewCount = 64;
+        public bool SequentialFileName = false;
         public Quaternion DefaultRotation = Quaternion.Euler(0, 0, 0);
         public string OutputDir = "output";
         
@@ -34,7 +38,7 @@ namespace DefaultNamespace
             Camera.main.transform.rotation = DefaultRotation;
         }
 
-        private void MoveCamera(int rotationX = 0, int rotationZ = 0)
+        private void MoveCamera(float rotationX = 0, float rotationZ = 0)
         {
             SetDefaultCamera();
             Camera.main.transform.RotateAround(_unitychan.transform.position, Vector3.right, rotationX);
@@ -48,7 +52,7 @@ namespace DefaultNamespace
             return (Camera.main.transform.position - _unitychan.transform.position).magnitude;
         }
         
-        private async UniTask TakeScreenshot(UniTaskCompletionSource ucs, int rotationX = 0, int rotationZ = 0, bool moveCamera = true)
+        private async UniTask TakeScreenshot(UniTaskCompletionSource ucs, float rotationX = 0, float rotationZ = 0, bool moveCamera = true, string basename = "")
         {
             if (moveCamera)
             {
@@ -73,24 +77,28 @@ namespace DefaultNamespace
             Destroy(rt);
             
             var bytes = screenshot.EncodeToPNG();
-            var filename = $"{OutputDir}/{rotationX}_{rotationZ}.png";
-            System.IO.File.WriteAllBytes(filename, bytes);
-            Debug.Log(string.Format("Took screenshot to: {0}", filename));
+            if (string.IsNullOrEmpty(basename))
+            {
+                basename = $"{rotationX}_{rotationZ}.png";
+            }
+            var filepath = $"{OutputDir}/{basename}";
+            System.IO.File.WriteAllBytes(filepath, bytes);
+            Debug.Log(string.Format("Took screenshot to: {0}", filepath));
         }
 
         private async UniTask TakeScreenshots()
         {
-            var rotXs = new List<int> { 0, 20, 40, 60, -20, -40, -60 };
-            foreach (var rotationX in rotXs)
+            foreach (var rotationX in RotationXs)
             {
-                var rotationZ = 0;
-                while (rotationZ < 360)
+                var delta = 360.0f / ViewCount;
+                for (var i = 0; i < ViewCount; i++)
                 {
+                    var rotationZ = i * delta;
+                    var basename = SequentialFileName ? $"{i}.png" : $"{rotationX}_{rotationZ}.png";
                     Debug.Log($"screenshot from camera angle of x: {rotationX}, z: {rotationZ}");
                     var ucs = new UniTaskCompletionSource();
-                    TakeScreenshot(ucs, rotationX, rotationZ).Forget();
+                    TakeScreenshot(ucs, rotationX, rotationZ, basename: basename).Forget();
                     await ucs.Task;
-                    rotationZ += 10;
                 }
             }
             Debug.Log($"finished");
