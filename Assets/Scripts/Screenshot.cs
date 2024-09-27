@@ -60,13 +60,13 @@ namespace DefaultNamespace
                 await UniTask.WaitForEndOfFrame(this);
             }
 
-            var rt = new RenderTexture(width, height, 24);
+            var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
             Camera.main.targetTexture = rt;
             RenderTexture.active = rt;
             Camera.main.Render();
             await UniTask.WaitForEndOfFrame(this);
             
-            var screenshot = new Texture2D(width, height, TextureFormat.RGB24, false);
+            var screenshot = new Texture2D(width, height, TextureFormat.RGBA32, false);
             var minX = (Screen.width - width) / 2.0f;
             var minY = (Screen.height - height) / 2.0f;
             screenshot.ReadPixels(new Rect(minX, minY, minX + width, minY + height), 0, 0);
